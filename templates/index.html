@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calci - Mutual Fund Returns Calculator</title>
+    <link rel="icon" href="{{ url_for('static', filename='franklin.webp') }}" type="image/webp">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+</head>
+<body>
+    <div class="app-container">
+        <header>
+            <div class="logo">Calci</div>
+        </header>
+
+        <h1 class="page-title">Mutual Fund Returns <span class="highlight">Calculator</span></h1>
+
+        <div class="mode-toggle">
+            <button class="mode-btn" data-mode="lumpsum">Lump Sum</button>
+            <button class="mode-btn active" data-mode="sip">SIP</button>
+        </div>
+
+        <div class="grid-top">
+        <div class="calculator-card">
+            <div class="input-group">
+                <label class="input-label" id="amount-label">Monthly SIP Amount</label>
+                <div class="slider-container">
+                    <input type="range" id="amount-slider" min="500" max="500000" value="5000" step="500">
+                    <div class="slider-bounds">
+                        <span>₹500</span>
+                        <span>₹5L</span>
+                    </div>
+                </div>
+                <div class="value-display" id="amount-display">₹5,000</div>
+                <input type="number" class="manual-input" id="amount-input" placeholder="Enter amount">
+            </div>
+
+            <div class="input-group">
+                <label class="input-label">Expected Return Rate (P.A)</label>
+                <div class="slider-container">
+                    <input type="range" id="rate-slider" min="1" max="50" value="12" step="0.5">
+                    <div class="slider-bounds">
+                        <span>1%</span>
+                        <span>50%</span>
+                    </div>
+                </div>
+                <div class="value-display" id="rate-display">12%</div>
+                <input type="number" class="manual-input" id="rate-input" placeholder="Enter rate" step="0.1">
+            </div>
+
+            <div class="input-group">
+                <label class="input-label">Time Period</label>
+                <div class="slider-container">
+                    <input type="range" id="years-slider" min="1" max="60" value="10" step="1">
+                    <div class="slider-bounds">
+                        <span>1 Year</span>
+                        <span>60 Years</span>
+                    </div>
+                </div>
+                <div class="value-display" id="years-display">10 Years</div>
+                <input type="number" class="manual-input" id="years-input" placeholder="Enter years" min="1" max="60">
+            </div>
+        </div>
+
+        <div class="results-section" id="results-section">
+            <div class="chart-legend">
+                <span class="legend-item"><span class="legend-dot invested"></span> Invested Amount</span>
+                <span class="legend-item"><span class="legend-dot returns"></span> Est. Returns</span>
+            </div>
+
+            <div class="donut-chart-container">
+                <canvas id="donutChart"></canvas>
+            </div>
+
+            <div class="summary-table">
+                <div class="summary-row">
+                    <span class="summary-label">Invested Amount</span>
+                    <span class="summary-value" id="total-invested">₹2,50,000</span>
+                </div>
+                <div class="summary-row">
+                    <span class="summary-label">Est. Returns</span>
+                    <span class="summary-value highlight" id="est-returns">₹5,26,462</span>
+                </div>
+                <div class="summary-row total-row">
+                    <span class="summary-label">Total Value</span>
+                    <span class="summary-value" id="total-value">₹7,76,462</span>
+                </div>
+            </div>
+
+            <button type="button" class="invest-btn" id="view-results-btn">View Results</button>
+        </div>
+        </div>
+
+        <div class="grid-bottom">
+        <div class="graph-section">
+            <h2 class="section-title">Growth Over Time</h2>
+            <div class="line-chart-container">
+                <canvas id="lineChart"></canvas>
+            </div>
+        </div>
+
+        <div class="breakdown-section">
+            <h2 class="section-title">Year-by-Year Breakdown</h2>
+            <p class="section-subtitle">See how compounding grows your money each year</p>
+            <div class="table-wrapper">
+                <table class="breakdown-table" id="breakdown-table">
+                    <thead>
+                        <tr>
+                            <th>Year</th>
+                            <th>Invested</th>
+                            <th>Returns</th>
+                            <th>Total Value</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+        </div>
+
+        <footer>
+            <p>Built with care &middot; Prady :) </p>
+        </footer>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>
