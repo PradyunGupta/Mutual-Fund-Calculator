@@ -5,19 +5,24 @@ document.addEventListener("DOMContentLoaded", () => {
     const rateSlider = document.getElementById("rate-slider");
     const yearsSlider = document.getElementById("years-slider");
     const holdYearsSlider = document.getElementById("hold-years-slider");
+    const startYearSlider = document.getElementById("start-year-slider");
 
     const amountDisplay = document.getElementById("amount-display");
     const rateDisplay = document.getElementById("rate-display");
     const yearsDisplay = document.getElementById("years-display");
     const holdYearsDisplay = document.getElementById("hold-years-display");
+    const startYearDisplay = document.getElementById("start-year-display");
 
     const amountInput = document.getElementById("amount-input");
     const rateInput = document.getElementById("rate-input");
     const yearsInput = document.getElementById("years-input");
     const holdYearsInput = document.getElementById("hold-years-input");
+    const startYearInput = document.getElementById("start-year-input");
 
     const amountLabel = document.getElementById("amount-label");
+    const yearsLabel = document.getElementById("years-label");
     const holdYearsGroup = document.getElementById("hold-years-group");
+    const startYearGroup = document.getElementById("start-year-group");
     const modeBtns = document.querySelectorAll(".mode-btn");
 
     let currentMode = "sip";
@@ -55,6 +60,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 rate: parseFloat(rateSlider.value),
                 years: parseInt(yearsSlider.value, 10),
                 holdYears: parseInt(holdYearsSlider.value, 10),
+                startYear: parseInt(startYearSlider.value, 10),
             };
             localStorage.setItem(CACHE_KEY, JSON.stringify(state));
         } catch (e) {
@@ -72,6 +78,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const rate = Math.max(1, Math.min(50, Number(state.rate) || 12));
             const years = Math.max(1, Math.min(60, parseInt(state.years, 10) || 10));
             const holdYears = Math.max(0, Math.min(40, parseInt(state.holdYears, 10) || 0));
+            const startYear = Math.max(2026, Math.min(2080, parseInt(state.startYear, 10) || 2026));
 
             currentMode = mode;
             modeBtns.forEach((b) => {
@@ -80,31 +87,37 @@ document.addEventListener("DOMContentLoaded", () => {
 
             if (mode === "sip") {
                 amountLabel.textContent = "Monthly SIP Amount";
+                yearsLabel.textContent = "SIP Duration";
                 amountSlider.min = 500;
                 amountSlider.max = 500000;
                 amountSlider.step = 500;
                 amount = Math.max(500, Math.min(500000, amount || 5000));
                 holdYearsGroup.style.display = "block";
+                startYearGroup.style.display = "block";
             } else {
                 amountLabel.textContent = "Total Investment";
+                yearsLabel.textContent = "Time Period";
                 amountSlider.min = 500;
                 amountSlider.max = 10000000;
                 amountSlider.step = 500;
                 amount = Math.max(500, Math.min(10000000, amount || 250000));
                 holdYearsGroup.style.display = "none";
+                startYearGroup.style.display = "block";
             }
 
             amountSlider.value = amount;
             rateSlider.value = rate;
             yearsSlider.value = years;
             holdYearsSlider.value = holdYears;
+            startYearSlider.value = startYear;
 
             amountDisplay.textContent = formatIndianCurrency(amount);
             rateDisplay.textContent = rate + "%";
             yearsDisplay.textContent = years + " Year" + (years !== 1 ? "s" : "");
             holdYearsDisplay.textContent = holdYears + " Year" + (holdYears !== 1 ? "s" : "");
+            startYearDisplay.textContent = startYear;
 
-            [amountSlider, rateSlider, yearsSlider, holdYearsSlider].forEach(updateSliderTrack);
+            [amountSlider, rateSlider, yearsSlider, holdYearsSlider, startYearSlider].forEach(updateSliderTrack);
             return true;
         } catch (e) {
             console.warn("Could not load calculator state", e);
@@ -152,6 +165,7 @@ document.addEventListener("DOMContentLoaded", () => {
     setupEditableField(rateDisplay, rateInput, rateSlider, (v) => v + "%");
     setupEditableField(yearsDisplay, yearsInput, yearsSlider, (v) => v + " Year" + (v != 1 ? "s" : ""));
     setupEditableField(holdYearsDisplay, holdYearsInput, holdYearsSlider, (v) => v + " Year" + (v != 1 ? "s" : ""));
+    setupEditableField(startYearDisplay, startYearInput, startYearSlider, (v) => v);
 
     modeBtns.forEach((btn) => {
         btn.addEventListener("click", () => {
@@ -161,6 +175,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
             if (currentMode === "sip") {
                 amountLabel.textContent = "Monthly SIP Amount";
+                yearsLabel.textContent = "SIP Duration";
                 amountSlider.min = 500;
                 amountSlider.max = 500000;
                 amountSlider.step = 500;
@@ -169,6 +184,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 holdYearsGroup.style.display = "block";
             } else {
                 amountLabel.textContent = "Total Investment";
+                yearsLabel.textContent = "Time Period";
                 amountSlider.min = 500;
                 amountSlider.max = 10000000;
                 amountSlider.step = 500;
@@ -183,7 +199,7 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     });
 
-    [amountSlider, rateSlider, yearsSlider, holdYearsSlider].forEach((slider) => {
+    [amountSlider, rateSlider, yearsSlider, holdYearsSlider, startYearSlider].forEach((slider) => {
         slider.addEventListener("input", () => {
             updateSliderTrack(slider);
 
@@ -197,6 +213,8 @@ document.addEventListener("DOMContentLoaded", () => {
             } else if (slider === holdYearsSlider) {
                 const y = slider.value;
                 holdYearsDisplay.textContent = y + " Year" + (y != 1 ? "s" : "");
+            } else if (slider === startYearSlider) {
+                startYearDisplay.textContent = slider.value;
             }
 
             saveState();
@@ -211,12 +229,13 @@ document.addEventListener("DOMContentLoaded", () => {
         const rate = parseFloat(rateSlider.value);
         const years = parseInt(yearsSlider.value);
         const holdYears = parseInt(holdYearsSlider.value);
+        const startYear = parseInt(startYearSlider.value);
 
         try {
             const res = await fetch("/api/calculate", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ mode: currentMode, amount, rate, years, holdYears }),
+                body: JSON.stringify({ mode: currentMode, amount, rate, years, holdYears, startYear }),
             });
             const data = await res.json();
             updateResults(data);
@@ -279,8 +298,8 @@ document.addEventListener("DOMContentLoaded", () => {
     function updateLineChart(yearlyData) {
         const ctx = document.getElementById("lineChart").getContext("2d");
         const labels = yearlyData.map((d) => {
-            if (d.phase === "hold") return "Year " + d.year + " (Hold)";
-            return "Year " + d.year;
+            if (d.phase === "hold") return d.calendarYear + " (Hold)";
+            return String(d.calendarYear);
         });
         const investedData = yearlyData.map((d) => d.invested);
         const valueData = yearlyData.map((d) => d.value);
@@ -394,7 +413,7 @@ document.addEventListener("DOMContentLoaded", () => {
         tbody.innerHTML = yearlyData
             .map(
                 (d) => `<tr class="${d.phase === 'hold' ? 'hold-phase' : ''}">
-                    <td>${d.year}${d.phase === 'hold' ? ' <span class="phase-badge">Hold</span>' : ''}</td>
+                    <td>${d.calendarYear}${d.phase === 'hold' ? ' <span class="phase-badge">Hold</span>' : ''}</td>
                     <td>${formatIndianCurrency(d.invested)}</td>
                     <td>${formatIndianCurrency(d.returns)}</td>
                     <td>${formatIndianCurrency(d.value)}</td>

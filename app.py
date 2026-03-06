@@ -17,6 +17,7 @@ def calculate():
     rate = float(data.get("rate", 0)) / 100
     years = int(data.get("years", 0))
     hold_years = int(data.get("holdYears", 0))
+    start_year = int(data.get("startYear", 2026))
 
     yearly_data = []
 
@@ -26,6 +27,7 @@ def calculate():
             value = amount * ((1 + rate) ** year)
             yearly_data.append({
                 "year": year,
+                "calendarYear": start_year + year - 1,
                 "invested": round(total_invested, 2),
                 "value": round(value, 2),
                 "returns": round(value - total_invested, 2),
@@ -48,6 +50,7 @@ def calculate():
             invested_so_far = amount * months
             yearly_data.append({
                 "year": year,
+                "calendarYear": start_year + year - 1,
                 "invested": round(invested_so_far, 2),
                 "value": round(cumulative_value, 2),
                 "returns": round(cumulative_value - invested_so_far, 2),
@@ -62,6 +65,7 @@ def calculate():
             value_at_sip_end = value_at_sip_end * (1 + rate)
             yearly_data.append({
                 "year": years + year,
+                "calendarYear": start_year + years + year - 1,
                 "invested": round(total_invested, 2),
                 "value": round(value_at_sip_end, 2),
                 "returns": round(value_at_sip_end - total_invested, 2),
@@ -78,6 +82,7 @@ def calculate():
         "yearlyData": yearly_data,
         "sipYears": years,
         "holdYears": hold_years,
+        "startYear": start_year,
     })
 
 
