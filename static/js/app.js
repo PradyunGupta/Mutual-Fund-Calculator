@@ -4,16 +4,20 @@ document.addEventListener("DOMContentLoaded", () => {
     const amountSlider = document.getElementById("amount-slider");
     const rateSlider = document.getElementById("rate-slider");
     const yearsSlider = document.getElementById("years-slider");
+    const holdYearsSlider = document.getElementById("hold-years-slider");
 
     const amountDisplay = document.getElementById("amount-display");
     const rateDisplay = document.getElementById("rate-display");
     const yearsDisplay = document.getElementById("years-display");
+    const holdYearsDisplay = document.getElementById("hold-years-display");
 
     const amountInput = document.getElementById("amount-input");
     const rateInput = document.getElementById("rate-input");
     const yearsInput = document.getElementById("years-input");
+    const holdYearsInput = document.getElementById("hold-years-input");
 
     const amountLabel = document.getElementById("amount-label");
+    const holdYearsGroup = document.getElementById("hold-years-group");
     const modeBtns = document.querySelectorAll(".mode-btn");
 
     let currentMode = "sip";
@@ -50,6 +54,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 amount: parseFloat(amountSlider.value),
                 rate: parseFloat(rateSlider.value),
                 years: parseInt(yearsSlider.value, 10),
+                holdYears: parseInt(holdYearsSlider.value, 10),
             };
             localStorage.setItem(CACHE_KEY, JSON.stringify(state));
         } catch (e) {
@@ -66,6 +71,7 @@ document.addEventListener("DOMContentLoaded", () => {
             let amount = Number(state.amount);
             const rate = Math.max(1, Math.min(50, Number(state.rate) || 12));
             const years = Math.max(1, Math.min(60, parseInt(state.years, 10) || 10));
+            const holdYears = Math.max(0, Math.min(40, parseInt(state.holdYears, 10) || 0));
 
             currentMode = mode;
             modeBtns.forEach((b) => {
@@ -78,23 +84,27 @@ document.addEventListener("DOMContentLoaded", () => {
                 amountSlider.max = 500000;
                 amountSlider.step = 500;
                 amount = Math.max(500, Math.min(500000, amount || 5000));
+                holdYearsGroup.style.display = "block";
             } else {
                 amountLabel.textContent = "Total Investment";
                 amountSlider.min = 500;
                 amountSlider.max = 10000000;
                 amountSlider.step = 500;
                 amount = Math.max(500, Math.min(10000000, amount || 250000));
+                holdYearsGroup.style.display = "none";
             }
 
             amountSlider.value = amount;
             rateSlider.value = rate;
             yearsSlider.value = years;
+            holdYearsSlider.value = holdYears;
 
             amountDisplay.textContent = formatIndianCurrency(amount);
             rateDisplay.textContent = rate + "%";
             yearsDisplay.textContent = years + " Year" + (years !== 1 ? "s" : "");
+            holdYearsDisplay.textContent = holdYears + " Year" + (holdYears !== 1 ? "s" : "");
 
-            [amountSlider, rateSlider, yearsSlider].forEach(updateSliderTrack);
+            [amountSlider, rateSlider, yearsSlider, holdYearsSlider].forEach(updateSliderTrack);
             return true;
         } catch (e) {
             console.warn("Could not load calculator state", e);
@@ -141,6 +151,7 @@ document.addEventListener("DOMContentLoaded", () => {
     setupEditableField(amountDisplay, amountInput, amountSlider, formatIndianCurrency);
     setupEditableField(rateDisplay, rateInput, rateSlider, (v) => v + "%");
     setupEditableField(yearsDisplay, yearsInput, yearsSlider, (v) => v + " Year" + (v != 1 ? "s" : ""));
+    setupEditableField(holdYearsDisplay, holdYearsInput, holdYearsSlider, (v) => v + " Year" + (v != 1 ? "s" : ""));
 
     modeBtns.forEach((btn) => {
         btn.addEventListener("click", () => {
@@ -155,6 +166,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 amountSlider.step = 500;
                 amountSlider.value = 5000;
                 amountDisplay.textContent = formatIndianCurrency(5000);
+                holdYearsGroup.style.display = "block";
             } else {
                 amountLabel.textContent = "Total Investment";
                 amountSlider.min = 500;
@@ -162,6 +174,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 amountSlider.step = 500;
                 amountSlider.value = 250000;
                 amountDisplay.textContent = formatIndianCurrency(250000);
+                holdYearsGroup.style.display = "none";
             }
 
             updateSliderTrack(amountSlider);
@@ -170,7 +183,7 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     });
 
-    [amountSlider, rateSlider, yearsSlider].forEach((slider) => {
+    [amountSlider, rateSlider, yearsSlider, holdYearsSlider].forEach((slider) => {
         slider.addEventListener("input", () => {
             updateSliderTrack(slider);
 
@@ -178,9 +191,12 @@ document.addEventListener("DOMContentLoaded", () => {
                 amountDisplay.textContent = formatIndianCurrency(slider.value);
             } else if (slider === rateSlider) {
                 rateDisplay.textContent = slider.value + "%";
-            } else {
+            } else if (slider === yearsSlider) {
                 const y = slider.value;
                 yearsDisplay.textContent = y + " Year" + (y != 1 ? "s" : "");
+            } else if (slider === holdYearsSlider) {
+                const y = slider.value;
+                holdYearsDisplay.textContent = y + " Year" + (y != 1 ? "s" : "");
             }
 
             saveState();
@@ -194,12 +210,13 @@ document.addEventListener("DOMContentLoaded", () => {
         const amount = parseFloat(amountSlider.value);
         const rate = parseFloat(rateSlider.value);
         const years = parseInt(yearsSlider.value);
+        const holdYears = parseInt(holdYearsSlider.value);
 
         try {
             const res = await fetch("/api/calculate", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ mode: currentMode, amount, rate, years }),
+                body: JSON.stringify({ mode: currentMode, amount, rate, years, holdYears }),
             });
             const data = await res.json();
             updateResults(data);
@@ -261,7 +278,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function updateLineChart(yearlyData) {
         const ctx = document.getElementById("lineChart").getContext("2d");
-        const labels = yearlyData.map((d) => "Year " + d.year);
+        const labels = yearlyData.map((d) => {
+            if (d.phase === "hold") return "Year " + d.year + " (Hold)";
+            return "Year " + d.year;
+        });
         const investedData = yearlyData.map((d) => d.invested);
         const valueData = yearlyData.map((d) => d.value);
 
@@ -373,8 +393,8 @@ document.addEventListener("DOMContentLoaded", () => {
         const tbody = document.querySelector("#breakdown-table tbody");
         tbody.innerHTML = yearlyData
             .map(
-                (d) => `<tr>
-                    <td>${d.year}</td>
+                (d) => `<tr class="${d.phase === 'hold' ? 'hold-phase' : ''}">
+                    <td>${d.year}${d.phase === 'hold' ? ' <span class="phase-badge">Hold</span>' : ''}</td>
                     <td>${formatIndianCurrency(d.invested)}</td>
                     <td>${formatIndianCurrency(d.returns)}</td>
                     <td>${formatIndianCurrency(d.value)}</td>

@@ -62,6 +62,19 @@
                 <div class="value-display" id="years-display">10 Years</div>
                 <input type="number" class="manual-input" id="years-input" placeholder="Enter years" min="1" max="60">
             </div>
+
+            <div class="input-group" id="hold-years-group">
+                <label class="input-label">Hold After SIP (No new contributions)</label>
+                <div class="slider-container">
+                    <input type="range" id="hold-years-slider" min="0" max="40" value="0" step="1">
+                    <div class="slider-bounds">
+                        <span>0 Years</span>
+                        <span>40 Years</span>
+                    </div>
+                </div>
+                <div class="value-display" id="hold-years-display">0 Years</div>
+                <input type="number" class="manual-input" id="hold-years-input" placeholder="Enter years" min="0" max="40">
+            </div>
         </div>
 
         <div class="results-section" id="results-section">
